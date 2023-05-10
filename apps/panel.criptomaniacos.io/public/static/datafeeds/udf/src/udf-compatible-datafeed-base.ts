@@ -31,6 +31,7 @@ import {
 import {
 	GetBarsResult,
 	HistoryProvider,
+	type LimitedResponseConfiguration,
 	PeriodParamsWithOptionalCountback,
 } from './history-provider';
 
@@ -104,7 +105,7 @@ function extractField<T, TField extends keyof T>(data: T, field: TField, arrayIn
 
 /**
  * This class implements interaction with UDF-compatible datafeed.
- * See UDF protocol reference at https://github.com/tradingview/charting_library/wiki/UDF
+ * See [UDF protocol reference](@docs/connecting_data/UDF)
  */
 export class UDFCompatibleDatafeedBase implements IExternalDatafeed, IDatafeedQuotesApi, IDatafeedChartApi {
 	protected _configuration: UdfCompatibleConfiguration = defaultConfiguration();
@@ -121,10 +122,20 @@ export class UDFCompatibleDatafeedBase implements IExternalDatafeed, IDatafeedQu
 
 	private readonly _requester: Requester;
 
-	protected constructor(datafeedURL: string, quotesProvider: IQuotesProvider, requester: Requester, updateFrequency: number = 10 * 1000) {
+	protected constructor(
+		datafeedURL: string,
+		quotesProvider: IQuotesProvider,
+		requester: Requester,
+		updateFrequency: number = 10 * 1000,
+		limitedServerResponse?: LimitedResponseConfiguration
+	) {
 		this._datafeedURL = datafeedURL;
 		this._requester = requester;
-		this._historyProvider = new HistoryProvider(datafeedURL, this._requester);
+		this._historyProvider = new HistoryProvider(
+			datafeedURL,
+			this._requester,
+			limitedServerResponse
+		);
 		this._quotesProvider = quotesProvider;
 
 		this._dataPulseProvider = new DataPulseProvider(this._historyProvider, updateFrequency);
@@ -183,6 +194,10 @@ export class UDFCompatibleDatafeedBase implements IExternalDatafeed, IDatafeedQu
 							label: extractField(response, 'label', i),
 							labelFontColor: extractField(response, 'labelFontColor', i),
 							minSize: extractField(response, 'minSize', i),
+							borderWidth: extractField(response, 'borderWidth', i),
+							hoveredBorderWidth: extractField(response, 'hoveredBorderWidth', i),
+							imageUrl: extractField(response, 'imageUrl', i),
+							showLabelWhenImageLoaded: extractField(response, 'showLabelWhenImageLoaded', i),
 						});
 					}
 
@@ -220,6 +235,8 @@ export class UDFCompatibleDatafeedBase implements IExternalDatafeed, IDatafeedQu
 							color: extractField(response, 'color', i),
 							label: extractField(response, 'label', i),
 							tooltip: extractField(response, 'tooltip', i),
+							imageUrl: extractField(response, 'imageUrl', i),
+							showLabelWhenImageLoaded: extractField(response, 'showLabelWhenImageLoaded', i),
 						});
 					}
 
@@ -331,7 +348,7 @@ export class UDFCompatibleDatafeedBase implements IExternalDatafeed, IDatafeedQu
 							original_unit_id: response.original_unit_id ?? response['original-unit-id'],
 							unit_conversion_types: response.unit_conversion_types ?? response['unit-conversion-types'],
 							has_intraday: response.has_intraday ?? response['has-intraday'] ?? false,
-							// tslint:disable-next-line: no-deprecation
+							// eslint-disable-next-line deprecation/deprecation
 							has_no_volume: response.has_no_volume ?? response['has-no-volume'],
 							visible_plots_set: response.visible_plots_set ?? response['visible-plots-set'],
 							minmov: response.minmovement ?? response.minmov ?? 0,
@@ -370,7 +387,7 @@ export class UDFCompatibleDatafeedBase implements IExternalDatafeed, IDatafeedQu
 			.catch(onError);
 	}
 
-	public subscribeBars(symbolInfo: LibrarySymbolInfo, resolution: ResolutionString, onTick: SubscribeBarsCallback, listenerGuid: string, onResetCacheNeededCallback: () => void): void {
+	public subscribeBars(symbolInfo: LibrarySymbolInfo, resolution: ResolutionString, onTick: SubscribeBarsCallback, listenerGuid: string, _onResetCacheNeededCallback: () => void): void {
 		this._dataPulseProvider.subscribeBars(symbolInfo, resolution, onTick, listenerGuid);
 	}
 

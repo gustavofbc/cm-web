@@ -40,7 +40,8 @@ export class QuotesPulseProvider {
         if (this._requestsPending > 0) {
             return;
         }
-        for (const listenerGuid in this._subscribers) { // tslint:disable-line:forin
+        // eslint-disable-next-line guard-for-in
+        for (const listenerGuid in this._subscribers) {
             this._requestsPending++;
             const subscriptionRecord = this._subscribers[listenerGuid];
             this._quotesProvider.getQuotes(updateType === 1 /* SymbolsType.Fast */ ? subscriptionRecord.fastSymbols : subscriptionRecord.symbols)

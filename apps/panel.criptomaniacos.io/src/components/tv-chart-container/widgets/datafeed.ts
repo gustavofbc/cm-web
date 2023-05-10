@@ -1,8 +1,18 @@
 import axios, { Axios, AxiosError } from "axios";
-import { HistoryCallback, IBasicDataFeed, LibrarySymbolInfo, OnReadyCallback, PeriodParams, ResolutionString, ResolveCallback, SearchSymbolsCallback, SubscribeBarsCallback, SymbolResolveExtension } from "__static/charting_library";
+import {
+  HistoryCallback,
+  IBasicDataFeed,
+  LibrarySymbolInfo,
+  OnReadyCallback,
+  PeriodParams,
+  ResolutionString,
+  ResolveCallback,
+  SearchSymbolsCallback,
+  SubscribeBarsCallback,
+  SymbolResolveExtension,
+} from "__static/charting_library";
 
 export class Datafeed implements IBasicDataFeed {
-
   onReady(callback: OnReadyCallback) {
     callback({
       exchanges: [
@@ -38,12 +48,7 @@ export class Datafeed implements IBasicDataFeed {
     });
   }
 
-  searchSymbols(
-    userInput: string,
-    exchange: string,
-    symbolType: string,
-    onResult: SearchSymbolsCallback
-  ) {
+  searchSymbols(userInput: string, exchange: string, symbolType: string, onResult: SearchSymbolsCallback) {
     onResult([
       {
         symbol: "BTC/USDT",
@@ -84,10 +89,9 @@ export class Datafeed implements IBasicDataFeed {
     symbolName: string,
     onResolve: ResolveCallback,
     onError: (err: string) => void,
-    extension?: SymbolResolveExtension
+    extension?: SymbolResolveExtension,
   ) {
     const symbols = ["BTCUSDT", "ETHUSDT", "ADAUSDT", "BNBUSDT"];
-
 
     if (!symbols.includes(symbolName)) {
       onError("Símbolo não suportado");
@@ -103,6 +107,7 @@ export class Datafeed implements IBasicDataFeed {
         minmov: 1,
         pricescale: 100,
         has_intraday: true,
+        // @ts-ignore
         supported_resolutions: ["1", "3", "5", "15", "30", "60", "120", "180", "240", "1D", "1W", "1M"],
         format: "price",
         volume_precision: 8,
@@ -116,9 +121,8 @@ export class Datafeed implements IBasicDataFeed {
     resolution: ResolutionString,
     periodParams: PeriodParams,
     onResult: HistoryCallback,
-    onError: (error: string) => void
+    onError: (error: string) => void,
   ): Promise<void> {
-    
     const symbol = symbolInfo.name;
     let interval: string;
 
@@ -187,7 +191,7 @@ export class Datafeed implements IBasicDataFeed {
     resolution: ResolutionString,
     onTick: SubscribeBarsCallback,
     listenerGuid: string,
-    onResetCacheNeededCallback: () => void
+    onResetCacheNeededCallback: () => void,
   ) {
     const interval = setInterval(() => {
       this.getBars(
@@ -197,7 +201,7 @@ export class Datafeed implements IBasicDataFeed {
         (bars) => {
           onTick(bars[bars.length - 1]);
         },
-        () => {}
+        () => {},
       );
     }, 1000);
     return function () {
